@@ -1,0 +1,81 @@
+{
+    "fields": [
+      {"name": "study_title", "type": "string", "description": "Title of the study", "constraints": {"required": true}},
+      {"name": "study_internal_id", "type": "string", "description": "Unique identifier for study", "constraints": {"required": true}},
+      {"name": "study_preregistration", "type": "string", "description": "DOI of pre-registration document describing data collection"},
+      {"name": "study_ethics", "type": "string", "description": "Name of ethics committee and approval number"},
+      {"name": "study_registration", "type": "string", "description": "Registry and ID of clinical trial registration"},
+      {"name": "study_short_description", "type": "string", "description": "Short narrative description of the study", "constraints": {"required": true}},
+      {"name": "study_sample", "type": "string", "description": "Short description of the study sample", "constraints": {"required": true}},
+  
+      {
+        "name": "study_groups",
+        "type": "array",
+        "description": "Groups in the study",
+        "items": {
+          "type": "object",
+          "properties": {
+            "study_group_name": {"type": "string", "description": "Group name", "constraints": {"required": true}},
+            "study_group_description": {"type": "string", "description": "Group description"},
+            "study_group_size": {"type": "integer", "description": "Sample size"},
+            "study_group_inclusion": {
+              "type": "array",
+              "description": "Inclusion criteria for sample group",
+              "items": {"type": "string"}
+            },
+            "study_group_exclusion": {
+              "type": "array",
+              "description": "Exclusion criteria for sample group",
+              "items": {"type": "string"}
+            }
+          }
+        }
+      },
+  
+      {"name": "study_intervention", "type": "string", "description": "Short description of the study intervention, if any"},
+      {"name": "study_setting", "type": "string", "description": "Description of the study setting", "constraints": {"required": true}},
+      {"name": "study_geographical_location", "type": "string", "description": "Geographical location and context (city, rural, urban)", "constraints": {"required": true}},
+  
+      {
+        "name": "study_contributors",
+        "type": "array",
+        "description": "Any contributors to the study",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {"type": "string", "description": "Name of the contributor"},
+            "role": {"type": "string", "description": "Role in the study"},
+            "affiliation": {"type": "string", "description": "Institutional affiliation"},
+            "email": {"type": "string", "description": "Email of the contributor"}
+          }
+        }
+      },
+  
+      {
+        "name": "study_datasets",
+        "type": "array",
+        "description": "Datasets contained within the study",
+        "constraints": {"required": true},
+        "items": {"type": "string"}
+      },
+  
+      {"name": "study_type", "type": "string", "description": "Type of study"},
+      
+      {
+        "name": "study_funding_sources",
+        "type": "array",
+        "description": "Any funding sources supporting the project. If the funding number is available, it should be given",
+        "items": {"type": "string"}
+      },
+  
+      {
+        "name": "study_keywords",
+        "type": "array",
+        "description": "Key words describing the project",
+        "items": {"type": "string"}
+      }
+    ],
+  
+    "primaryKey": ["study_internal_id"]
+  }
+  

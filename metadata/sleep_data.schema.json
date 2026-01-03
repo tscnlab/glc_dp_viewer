@@ -1,0 +1,20 @@
+{
+  "fields": [
+    {
+      "name": "participant_id",
+      "type": "string"
+    },
+    {
+      "name": "date",
+      "type": "date"
+    },
+    {
+      "name": "sleep_duration",
+      "type": "number"
+    },
+    {
+      "name": "light_condition",
+      "type": "string"
+    }
+  ]
+}

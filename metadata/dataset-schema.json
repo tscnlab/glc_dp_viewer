@@ -1,0 +1,105 @@
+{
+    "fields": [
+      {"name": "dataset_internal_id", "type": "string", "description": "Unique identifier of dataset", "constraints": {"required": true}},
+      {"name": "dataset_instructions", "type": "string", "description": "Description of the instructions given to the study participants before or during the collection of this dataset", "constraints": {"required": true}},
+  
+      {
+        "name": "dataset_crossref",
+        "type": "object",
+        "description": "Cross-referencing information",
+        "constraints": {"required": true},
+        "properties": {
+          "dataset_crossref_study_id": {"type": "string", "description": "Internal ID for study", "constraints": {"required": true}},
+          "dataset_crossref_participant_id": {"type": "string", "description": "Internal ID for participant", "constraints": {"required": true}},
+          "dataset_crossref_device_id": {"type": "string", "description": "Internal ID for device", "constraints": {"required": true}}
+        }
+      },
+  
+      {"name": "dataset_device_location", "type": "string", "description": "Anatomical location of the acquisition device", "constraints": {"required": true}},
+      {"name": "dataset_sampling_interval", "type": "number", "description": "Sampling interval", "constraints": {"required": true}},
+  
+      {
+        "name": "dataset_datetime",
+        "type": "object",
+        "description": "Name of the datetime column",
+        "constraints": {"required": true},
+        "properties": {
+          "dataset_datetime_date": {"type": "string", "description": "Name of the date column or datetime column", "constraints": {"required": true}},
+          "dataset_datetime_dateformat": {"type": "string", "description": "Formatting of the date column (e.g., 'YYYY/MM/DD') or datetime column (e.g. 'YYYY/MM/DD HH:MM:SS')", "constraints": {"required": true}},
+          "dataset_datetime_time": {"type": "string", "description": "Name of the time column (only if separate from date)", "constraints": {"required": true}},
+          "dataset_datetime_timeformat": {"type": "string", "description": "Formatting of the time column (e.g., 'HH:MM:SS') (only if separate from date)", "constraints": {"required": true}}
+        }
+      },
+  
+      {"name": "dataset_Illuminance", "type": "string", "description": "Column name in the data that contains photopic illuminance", "constraints": {"required": true}},
+      {"name": "dataset_melEDI", "type": "string", "description": "Column name in the data that contains melanopic EDI (D65)"},
+      {"name": "dataset_timezone", "type": "string", "description": "Timezone of data collection (Olson database)", "constraints": {"required": true}},
+  
+      {
+        "name": "dataset_location",
+        "type": "array",
+        "description": "Latitude/Longitude of data collection",
+        "constraints": {"required": true},
+        "items": {"type": "string"}
+      },
+  
+      {
+        "name": "dataset_file",
+        "type": "array",
+        "description": "Dataset descriptors",
+        "constraints": {"required": true},
+        "items": {
+          "type": "object",
+          "properties": {
+            "dataset_file_names": {
+              "type": "array",
+              "description": "File names corresponding",
+              "constraints": {"required": true},
+              "items": {"type": "string"}
+            },
+            "dataset_file_format": {"type": "string", "description": "File format", "constraints": {"required": true}},
+            "dataset_file_encoding": {
+              "type": "array",
+              "description": "File text encoding (e.g., UTF-8)",
+              "constraints": {"required": true},
+              "items": {"type": "string"}
+            },
+            "dataset_file_timezone": {"type": "string", "description": "Timezone of data (Olson database)", "constraints": {"required": true}},
+            "dataset_file_auxiliary": {"type": "boolean", "description": "Indicator whether the data files contain light data (or auxiliary data)", "constraints": {"required": true}},
+  
+            "dataset_file_preprocessing": {
+              "type": "object",
+              "description": "Preprocessing Information",
+              "constraints": {"required": true},
+              "properties": {
+                "dataset_file_preprocessing_bol": {"type": "boolean", "description": "Indicator whether preprocessing was applied", "constraints": {"required": true}},
+                "dataset_file_preprocessing_desc": {
+                  "type": "array",
+                  "description": "Description of preprocessing applied",
+                  "items": {"type": "string"}
+                }
+              }
+            },
+  
+            "dataset_file_variables": {
+              "type": "array",
+              "description": "Variables contained in the dataset, units and location (column)",
+              "constraints": {"required": true},
+              "items": {
+                "type": "object",
+                "properties": {
+                  "dataset_file_variables_name": {"type": "string", "description": "Variable name as contained in the dataset", "constraints": {"required": true}},
+                  "dataset_file_variables_labels": {"type": "string", "description": "Variable name as clear name", "constraints": {"required": true}},
+                  "dataset_file_variables_units": {"type": "string", "description": "Unit", "constraints": {"required": true}},
+                  "dataset_file_variables_calibration": {"type": "string", "description": "Description of transformation for calibration"}
+                }
+              }
+            }
+          }
+        }
+      }
+    ],
+  
+    "primaryKey": ["dataset_internal_id"]
+  }
+  

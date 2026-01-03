@@ -1,0 +1,26 @@
+{
+    "fields": [
+      {"name": "participant_internal_id", "type": "string", "description": "Unique ID for participant", "constraints": {"required": true}},
+      {"name": "participant_age", "type": "integer", "description": "Age of the participant at the time of first participation", "constraints": {"required": true}},
+      {"name": "participant_sex", "type": "string", "description": "Sex of participant, if recorded"},
+      {"name": "participant_gender", "type": "string", "description": "Gender of participant, if required"},
+  
+      {
+        "name": "participant_characteristic",
+        "type": "array",
+        "description": "Biological and non-biological characteristics of participant",
+        "items": {
+          "type": "object",
+          "properties": {
+            "participant_characteristic_name": {"type": "string", "description": "Name of the characteristic", "constraints": {"required": true}},
+            "participant_characteristic_value": {"type": "string", "description": "Value of the characteristic", "constraints": {"required": true}},
+            "participant_characteristic_unit": {"type": "string", "description": "Unit of the characteristic"},
+            "participant_characteristic_description": {"type": "string", "description": "Description of the characteristic"}
+          }
+        }
+      }
+    ],
+  
+    "primaryKey": ["participant_internal_id"]
+  }
+  

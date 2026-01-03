@@ -1,0 +1,75 @@
+{
+  "profile": "gleam-dp-profile.json",
+  "name": "light-study",
+  "title": "Effects of Light on Sleep",
+  "description": "Study metadata for GLEE protocol examining light exposure and sleep.",
+  "contributors": [
+    {
+      "title": "Dr. Zeta",
+      "email": "zeta@example.edu",
+      "role": "Principal Investigator",
+      "affiliation": "GLEE Lab"
+    },
+    {
+      "title": "Alex Analyst",
+      "email": "alex@example.edu",
+      "role": "Data Scientist",
+      "affiliation": "GLEE Lab"
+    }
+  ],
+  "study": {
+    "study_internal_id": "LUX-GLEE-2025",
+    "study_title": "Effects of Light on Sleep",
+    "study_short_description": "A short-term intervention study measuring sleep metrics under different lighting conditions.",
+    "study_sample": "Healthy adults aged 18\u201335, N=20",
+    "study_setting": "Sleep lab environment",
+    "study_geographical_location": "Urban US",
+    "study_type": "Crossover randomized trial",
+    "study_funding_sources": [
+      "NIH R01-45678",
+      "Sleep Science Institute"
+    ],
+    "study_keywords": [
+      "circadian",
+      "light",
+      "sleep",
+      "melatonin"
+    ],
+    "study_datasets": [
+      "sleep_data",
+      "participant",
+      "dataset",
+      "device"
+    ]
+  },
+  "resources": [
+    {
+      "name": "sleep_data",
+      "path": "sleep_data.json",
+      "format": "json",
+      "mediatype": "application/json",
+      "schema": "schemas/sleep_data.schema.json"
+    },
+    {
+      "name": "participant",
+      "path": "participant.json",
+      "format": "json",
+      "mediatype": "application/json",
+      "schema": "schemas/participant.schema.json"
+    },
+    {
+      "name": "dataset",
+      "path": "dataset.json",
+      "format": "json",
+      "mediatype": "application/json",
+      "schema": "schemas/dataset.schema.json"
+    },
+    {
+      "name": "device",
+      "path": "device.json",
+      "format": "json",
+      "mediatype": "application/json",
+      "schema": "schemas/device.schema.json"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+# Links listed below will be included in your site's navbar (navigation at the top)
+
+- text: Home
+  href: /
+- text: Metadata
+  href: /metadata/
+- text: Data
+  href: /data/
+- text: Example dataset
+  menu:
+  - text: Example dataset
+    href: /example/
+  - text: "---"
+  - text: Deployment 1
+    href: /example/00a2c20d/
+  - text: Deployment 2
+    href: /example/29b7d356/
+  - text: Deployment 3
+    href: /example/577b543a/
+  - text: Deployment 4
+    href: /example/62c200a9/
+- text: GitHub
+  href: https://github.com/salmathalji/GLEAM-dp-metadata
+

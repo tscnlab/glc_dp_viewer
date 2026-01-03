@@ -1,0 +1,35 @@
+# Site settings
+title: GLEAM DP
+author: GLEAM DP Development Team
+email: johannes.zauner@tum.de
+# url: "https://tscnlab.github.io/GLEAM-dp/"
+
+# SOCIAL PROFILES
+social:
+  github: salmathalji/GLEAM-dp-metadata
+
+
+# Theme
+theme: minima
+remote_theme: tdwg/petridish
+github_edit: true
+logo: assets/logo_glee.png
+
+# Build settings
+repository: salmathalji/GLEAM-dp-metadata # Required so Jekyll on GitHub Actions can access repo metadata
+markdown: kramdown
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+
+exclude:
+   - .sass-cache/
+   - .jekyll-cache/
+   - gemfiles/
+   - Gemfile
+   - Gemfile.lock
+   - node_modules/
+   - vendor/bundle/
+   - vendor/cache/
+   - vendor/gems/
+   - vendor/ruby/

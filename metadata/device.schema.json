@@ -1,0 +1,32 @@
+{
+    "fields": [
+      {"name": "device_internal_id", "type": "string", "description": "Unique ID of the device", "constraints": {"required": true}},
+      {"name": "device_manufacturer", "type": "string", "description": "Manufacturer of the device", "constraints": {"required": true}},
+      {"name": "device_model", "type": "string", "description": "Model of the device", "constraints": {"required": true}},
+      {"name": "device_serial_number", "type": "string", "description": "Serial number of the device", "constraints": {"required": true}},
+      {"name": "device_calibration", "type": "string", "description": "Date the device was last calibrated", "constraints": {"required": true}},
+  
+      {
+        "name": "device_sensor",
+        "type": "array",
+        "description": "Individual sensors present in the device",
+        "items": {
+          "type": "object",
+          "properties": {
+            "device_sensor_type": {"type": "string", "description": "Type of the sensor", "constraints": {"required": true}},
+            "device_sensor_datasheet": {"type": "object", "description": "Sensor datasheet information (linked to device_datasheet.json)"}
+          }
+        }
+      },
+  
+      {
+        "name": "device_datasheet",
+        "type": "object",
+        "description": "Device datasheet information (linked to device_datasheet.json)",
+        "constraints": {"required": true}
+      }
+    ],
+  
+    "primaryKey": ["device_internal_id"]
+  }
+  
