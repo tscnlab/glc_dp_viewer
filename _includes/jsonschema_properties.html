@@ -1,0 +1,48 @@
+<table>
+  <colgroup>
+    <col width="25%">
+    <col width="65%">
+    <col width="10%">
+  </colgroup>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Definition</th>
+      <th>Type</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for kv in include.properties %}
+      {% assign name = kv[0] %}
+      {% assign field = kv[1] %}
+
+      {% assign is_required = false %}
+      {% if include.required %}
+        {% for r in include.required %}
+          {% if r == name %}{% assign is_required = true %}{% endif %}
+        {% endfor %}
+      {% endif %}
+
+      <tr class="text-break">
+        <td id="{{ include.schema_id }}.{{ name }}">
+          <a href="#{{ include.schema_id }}.{{ name }}"><code>{{ name }}</code></a>
+          {% if is_required %}*{% endif %}
+        </td>
+        <td>
+          {{ field.description | markdownify }}
+          {% if field.enum %}
+            <p><strong>Enum</strong>: <code>{{ field.enum | join: ", " }}</code></p>
+          {% endif %}
+          {% if field.pattern %}
+            <p><strong>Pattern</strong>: <code>{{ field.pattern }}</code></p>
+          {% endif %}
+        </td>
+        <td>
+          <span class="badge bg-secondary">{{ field.type | default: "object" }}</span>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<p class="small">Fields marked with * are required.</p>
