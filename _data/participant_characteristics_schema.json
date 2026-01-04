@@ -1,6 +1,6 @@
 {
   "$schema": "https://frictionlessdata.io/schemas/table-schema.json",
-  "title": "Participant characteristics"
+  "title": "Participant characteristics",
   "fields": [
     {
       "name": "participant_internal_id",
