@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Device/Sensor Datasheet",
+  "title": "Device or Sensor datasheet",
   "type": "object",
   "additionalProperties": false,
   "properties": {
