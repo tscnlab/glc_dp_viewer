@@ -103,6 +103,19 @@ Compute inbound references to this schema section (table_schema_id):
               {% if field.example and field.example != "" %}
                 <p><strong>Example</strong>: <code>{{ field.example }}</code></p>
               {% endif %}
+
+              {% if table_schema.foreignKeys %}
+                {% for fk in table_schema.foreignKeys %}
+                 {% if fk.fields == field.name %}
+                  <p class="small text-muted">
+                    References:
+                    <a href="{{ site.baseurl }}/data/#{{ fk.reference.resource }}.{{ fk.reference.fields }}">
+                      <code>{{ fk.reference.resource }}</code>.<code>{{ fk.reference.fields }}</code>
+                    </a>
+                  </p>
+                {% endif %}
+              {% endfor %}
+            {% endif %}
             </td>
             <td><span class="badge bg-secondary">{{ field.type }}</span></td>
           </tr>
