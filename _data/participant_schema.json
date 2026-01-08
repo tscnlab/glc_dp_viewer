@@ -6,7 +6,8 @@
       "name": "participant_internal_id",
       "type": "string",
       "constraints": { "required": true },
-      "description": "Unique ID for participant"
+      "description": "Unique ID for participant",
+      "x-refersToSchema": "participant_characteristics_schema"
     },
     {
       "name": "participant_age",
