@@ -36,6 +36,18 @@
           {% if field.pattern %}
             <p><strong>Pattern</strong>: <code>{{ field.pattern }}</code></p>
           {% endif %}
+
+          {% if field['x-refersToSchema'] %}
+            {% assign target_key = field['x-refersToSchema'] %}
+            {% assign target_schema = site.data[target_key] %}
+
+            <p class="small text-muted">
+              References schema:
+              <a href="{{ site.baseurl }}/data/#{{ target_key }}">
+                <code>{{ target_schema.title | default: target_key }}</code>
+              </a>
+            </p>
+          {% endif %}
         </td>
         <td>
           <span class="badge bg-secondary">{{ field.type | default: "object" }}</span>
