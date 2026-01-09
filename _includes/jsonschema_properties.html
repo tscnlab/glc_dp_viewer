@@ -1,3 +1,5 @@
+{% assign prefix = include.prefix | default: include.schema_id %}
+
 <table>
   <colgroup>
     <col width="25%">
@@ -15,6 +17,7 @@
     {% for kv in include.properties %}
       {% assign name = kv[0] %}
       {% assign field = kv[1] %}
+      {% assign field_anchor = prefix | append: "." | append: name %}
 
       {% assign is_required = false %}
       {% if include.required %}
@@ -24,12 +27,13 @@
       {% endif %}
 
       <tr class="text-break">
-        <td id="{{ include.schema_id }}.{{ name }}">
-          <a href="#{{ include.schema_id }}.{{ name }}"><code>{{ name }}</code></a>
+        <td id="{{ field_anchor }}">
+          <a href="#{{ field_anchor }}"><code>{{ name }}</code></a>
           {% if is_required %}*{% endif %}
         </td>
         <td>
           {{ field.description | markdownify }}
+
           {% if field.enum %}
             <p><strong>Enum</strong>: <code>{{ field.enum | join: ", " }}</code></p>
           {% endif %}
@@ -48,6 +52,30 @@
               </a>
             </p>
           {% endif %}
+
+          {%- comment -%} NEW: recursively render nested object properties {%- endcomment -%}
+          {% if field.type == "object" and field.properties %}
+            <div class="mt-2 ms-3">
+              <p class="small text-muted mb-1">Properties</p>
+              {% include jsonschema_properties.html
+                 properties=field.properties
+                 required=field.required
+                 schema_id=include.schema_id
+                 prefix=field_anchor %}
+            </div>
+          {% endif %}
+
+          {%- comment -%} NEW: recursively render array-of-object item properties {%- endcomment -%}
+          {% if field.type == "array" and field.items and field.items.type == "object" and field.items.properties %}
+            <div class="mt-2 ms-3">
+              <p class="small text-muted mb-1">Item properties</p>
+              {% include jsonschema_properties.html
+                 properties=field.items.properties
+                 required=field.items.required
+                 schema_id=include.schema_id
+                 prefix=field_anchor | append: "[]" %}
+            </div>
+          {% endif %}
         </td>
         <td>
           <span class="badge bg-secondary">{{ field.type | default: "object" }}</span>
@@ -57,4 +85,6 @@
   </tbody>
 </table>
 
+{% if include.prefix == nil %}
 <p class="small">Fields marked with * are required.</p>
+{% endif %}
