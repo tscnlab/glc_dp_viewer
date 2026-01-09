@@ -40,6 +40,12 @@
           {% if field.pattern %}
             <p><strong>Pattern</strong>: <code>{{ field.pattern }}</code></p>
           {% endif %}
+          {% if field.minimum %}
+            <p><strong>Minimum</strong>: <code>{{ field.minimum }}</code></p>
+          {% endif %}
+          {% if field.maximum %}
+            <p><strong>Maximum</strong>: <code>{{ field.maximum }}</code></p>
+          {% endif %}
 
           {% if field['x-refersToSchema'] %}
             {% assign target_key = field['x-refersToSchema'] %}
@@ -53,7 +59,7 @@
             </p>
           {% endif %}
 
-          {%- comment -%} NEW: recursively render nested object properties {%- endcomment -%}
+          {%- comment -%} Recursively render nested object properties {%- endcomment -%}
           {% if field.type == "object" and field.properties %}
             <div class="mt-2 ms-3">
               <p class="small text-muted mb-1">Properties</p>
@@ -65,17 +71,19 @@
             </div>
           {% endif %}
 
-          {%- comment -%} NEW: recursively render array-of-object item properties {%- endcomment -%}
+          {%- comment -%} Recursively render array-of-object item properties {%- endcomment -%}
           {% if field.type == "array" and field.items and field.items.type == "object" and field.items.properties %}
+            {% assign item_prefix = field_anchor | append: "[]" %}
             <div class="mt-2 ms-3">
               <p class="small text-muted mb-1">Item properties</p>
               {% include jsonschema_properties.html
                  properties=field.items.properties
                  required=field.items.required
                  schema_id=include.schema_id
-                 prefix=field_anchor | append: "[]" %}
+                 prefix=item_prefix %}
             </div>
           {% endif %}
+
         </td>
         <td>
           <span class="badge bg-secondary">{{ field.type | default: "object" }}</span>
