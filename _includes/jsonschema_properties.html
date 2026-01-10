@@ -1,12 +1,12 @@
 {% assign prefix = include.prefix | default: include.schema_id %}
-{% assign mode = include.mode | default: "table" %}
 
 {% comment %}
-MODE = "table"  -> render a 3-col table (top-level)
-MODE = "nested" -> render a lightweight grid/list (nested props) to avoid table-in-table misalignment
+  Root call (top-level): render a real table (3 columns).
+  Recursive calls (nested objects/arrays): render a DIV "grid" (not a nested table) + collapsible <details>.
 {% endcomment %}
 
-{% if mode == "nested" %}
+{% if include.render_mode == "nested" %}
+
   <div class="schema-nested">
     {% for kv in include.properties %}
       {% assign name = kv[0] %}
@@ -29,27 +29,27 @@ MODE = "nested" -> render a lightweight grid/list (nested props) to avoid table-
           {{ field.description | markdownify }}
 
           {% if field.enum %}
-            <div class="small"><strong>Enum</strong>: <code>{{ field.enum | join: ", " }}</code></div>
+            <p><strong>Enum</strong>: <code>{{ field.enum | join: ", " }}</code></p>
           {% endif %}
           {% if field.pattern %}
-            <div class="small"><strong>Pattern</strong>: <code>{{ field.pattern }}</code></div>
+            <p><strong>Pattern</strong>: <code>{{ field.pattern }}</code></p>
           {% endif %}
           {% if field.minimum %}
-            <div class="small"><strong>Minimum</strong>: <code>{{ field.minimum }}</code></div>
+            <p><strong>Minimum</strong>: <code>{{ field.minimum }}</code></p>
           {% endif %}
           {% if field.maximum %}
-            <div class="small"><strong>Maximum</strong>: <code>{{ field.maximum }}</code></div>
+            <p><strong>Maximum</strong>: <code>{{ field.maximum }}</code></p>
           {% endif %}
 
           {% if field['x-refersToSchema'] %}
             {% assign target_key = field['x-refersToSchema'] %}
             {% assign target_schema = site.data[target_key] %}
-            <div class="small text-muted">
+            <p class="small text-muted">
               References schema:
               <a href="{{ site.baseurl }}/data/#{{ target_key }}">
                 <code>{{ target_schema.title | default: target_key }}</code>
               </a>
-            </div>
+            </p>
           {% endif %}
 
           {% if field.type == "object" and field.properties %}
@@ -62,7 +62,7 @@ MODE = "nested" -> render a lightweight grid/list (nested props) to avoid table-
                  required=field.required
                  schema_id=include.schema_id
                  prefix=field_anchor
-                 mode="nested" %}
+                 render_mode="nested" %}
             </details>
           {% endif %}
 
@@ -77,7 +77,7 @@ MODE = "nested" -> render a lightweight grid/list (nested props) to avoid table-
                  required=field.items.required
                  schema_id=include.schema_id
                  prefix=item_prefix
-                 mode="nested" %}
+                 render_mode="nested" %}
             </details>
           {% endif %}
 
@@ -87,11 +87,13 @@ MODE = "nested" -> render a lightweight grid/list (nested props) to avoid table-
           <span class="badge bg-secondary">{{ field.type | default: "object" }}</span>
         </div>
       </div>
+
     {% endfor %}
   </div>
 
 {% else %}
-  <table>
+
+  <table class="schema-root-table">
     <colgroup>
       <col width="25%">
       <col width="65%">
@@ -117,12 +119,11 @@ MODE = "nested" -> render a lightweight grid/list (nested props) to avoid table-
           {% endfor %}
         {% endif %}
 
-        <tr class="text-break">
-          <td id="{{ field_anchor }}">
+        <tr class="text-break" id="{{ field_anchor }}">
+          <td>
             <a href="#{{ field_anchor }}"><code>{{ name }}</code></a>
             {% if is_required %}*{% endif %}
           </td>
-
           <td>
             {{ field.description | markdownify }}
 
@@ -160,7 +161,7 @@ MODE = "nested" -> render a lightweight grid/list (nested props) to avoid table-
                    required=field.required
                    schema_id=include.schema_id
                    prefix=field_anchor
-                   mode="nested" %}
+                   render_mode="nested" %}
               </details>
             {% endif %}
 
@@ -175,11 +176,11 @@ MODE = "nested" -> render a lightweight grid/list (nested props) to avoid table-
                    required=field.items.required
                    schema_id=include.schema_id
                    prefix=item_prefix
-                   mode="nested" %}
+                   render_mode="nested" %}
               </details>
             {% endif %}
-          </td>
 
+          </td>
           <td>
             <span class="badge bg-secondary">{{ field.type | default: "object" }}</span>
           </td>
@@ -191,4 +192,5 @@ MODE = "nested" -> render a lightweight grid/list (nested props) to avoid table-
   {% if include.prefix == nil %}
     <p class="small">Fields marked with * are required.</p>
   {% endif %}
+
 {% endif %}
