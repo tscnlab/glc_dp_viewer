@@ -3,28 +3,25 @@ layout: default
 ---
 
 <style>
-  /* Widen the theme container so content isn't constrained to a narrow column */
-  .container,
-  .container-sm,
-  .container-md,
-  .container-lg,
-  .container-xl,
-  .container-xxl {
-    max-width: 1800px !important;
-    width: 95% !important;
-  }
-
-  /* Prevent field names from breaking vertically */
+  /* Keep field names readable */
   td code {
     white-space: nowrap;
   }
 
   table td:first-child {
     white-space: nowrap;
+    min-width: 280px;
   }
 
-  table col:first-child {
-    width: 35%;
+  /* Allow nested schemas to scroll instead of collapsing */
+  .schema-subtable-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  .schema-subtable-scroll table {
+    min-width: 700px;
   }
 </style>
 
