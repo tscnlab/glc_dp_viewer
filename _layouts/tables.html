@@ -6,7 +6,7 @@ layout: default
   /* Root tables on this page (Table Schema + JSON Schema root tables) */
   table {
     width: 100%;
-    table-layout: fixed;
+    table-layout: auto;
   }
   th, td {
     vertical-align: top;
@@ -23,7 +23,7 @@ layout: default
   /* First column (Name) should stay readable */
   table td:first-child, table th:first-child {
     width: 280px;
-    white-space: nowrap;
+    white-space: normal;
   }
 
   /* Nested JSON schema rendering (inside <details>) */
