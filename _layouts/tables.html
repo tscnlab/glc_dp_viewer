@@ -4,23 +4,31 @@ layout: default
 
 <style>
   /* Keep field names readable */
-  td code {
-    white-space: nowrap;
-  }
+  td code { white-space: nowrap; }
 
-  table td:first-child {
+  /* Apply "wide first column" ONLY to top-level tables */
+  table.schema-root-table td:first-child {
     white-space: nowrap;
     min-width: 280px;
   }
 
-  /* Allow nested schemas to scroll instead of collapsing */
+  /* Nested schema tables: let them behave like normal tables */
+  table.schema-nested-table {
+    table-layout: auto;
+    width: 100%;
+  }
+
+  /* Nested schema scroll wrapper */
   .schema-subtable-scroll {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     max-width: 100%;
   }
 
-  .schema-subtable-scroll .schema-nested-table { width: max-content; min-width: 900px; }
+  /* Give nested tables a minimum width so scrolling can happen cleanly */
+  .schema-subtable-scroll table.schema-nested-table {
+    min-width: 900px;
+  }
 </style>
 
 {{ content }}
