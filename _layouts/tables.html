@@ -2,6 +2,21 @@
 layout: default
 ---
 
+<style>
+  /* Prevent field names from breaking vertically */
+  td code {
+    white-space: nowrap;
+  }
+
+  table td:first-child {
+    white-space: nowrap;
+  }
+
+  table col:first-child {
+    width: 35%;
+  }
+</style>
+
 {{ content }}
 
 {% for table_schema_file in site.data["_tables"] %}
