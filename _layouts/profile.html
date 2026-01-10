@@ -2,6 +2,21 @@
 layout: default
 ---
 
+<style>
+  /* Prevent field names from breaking vertically */
+  td code {
+    white-space: nowrap;
+  }
+
+  table td:first-child {
+    white-space: nowrap;
+  }
+
+  table col:first-child {
+    width: 35%;
+  }
+</style>
+
 {{ content }}
 
 {% assign profile_file = "gleam-dp-profile" %}
