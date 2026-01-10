@@ -3,17 +3,25 @@ layout: default
 ---
 
 <style>
-  /* Prevent field names from breaking vertically */
+  /* Keep field names readable */
   td code {
     white-space: nowrap;
   }
 
   table td:first-child {
     white-space: nowrap;
+    min-width: 280px;
   }
 
-  table col:first-child {
-    width: 35%;
+  /* Allow nested schemas to scroll instead of collapsing */
+  .schema-subtable-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  .schema-subtable-scroll table {
+    min-width: 700px;
   }
 </style>
 
