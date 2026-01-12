@@ -18,8 +18,8 @@
       "additionalProperties": false,
       "properties": {
         "dataset_crossref_study_id": { "type": "string", "description": "Internal ID for study", "x-refersToField": "study_schema.study_internal_id" },
-        "dataset_crossref_participant_id": { "type": "string", "description": "Internal ID for participant", "x-refersToField": "participants_schema.participant_internal_id" },
-        "dataset_crossref_device_id": { "type": "string", "description": "Internal ID for device", "x-refersToField": "devices_schema.device_internal_id" }
+        "dataset_crossref_participant_id": { "type": "string", "description": "Internal ID for participant", "x-refersToField": "participant_schema.participant_internal_id" },
+        "dataset_crossref_device_id": { "type": "string", "description": "Internal ID for device", "x-refersToField": "device_schema.device_internal_id" }
       },
       "required": [
         "dataset_crossref_study_id",
