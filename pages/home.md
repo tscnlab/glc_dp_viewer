@@ -20,10 +20,11 @@ File | Description
 
 See [visualdiet.org](https://www.visualdiet.org) to learn more about GLEAM DP and the [metadata publication](https://doi.org/10.1186/s44247-024-00113-9) to learn more about the metadata structure.
 
+<!--
 ## Example
 
 See the [example dataset](example/).
-
+-->
 ## Software
 
 - [LightLogR](https://github.com/tscnlab/LightLogR): R package to read and manipulate GLEAM DP.
