@@ -5,4 +5,6 @@ permalink: /metadata/
 toc: true
 ---
 
-Metadata in GLEAM DP are expressed in a `datapackage.json` file. It follows the [Data Package](https://specs.frictionlessdata.io/data-package/#specification) specifications and includes generic **Data Package properties** and specific **GLEAM DP properties**. Properties indicated with `*` are required (i.e. cannot be empty). Additional metadata are organized as four related json resources: `study`, `participant`, `device`, and `dataset`
+Metadata in GLEAM DP are expressed in a `datapackage.json` file. It follows the [Frictionless Data Package](https://specs.frictionlessdata.io/data-package/#specification) specification and includes standard **package-level metadata** together with **GLEAM-defined fields and resource structures** tailored to light exposure and optical measurement research. Required properties are indicated with an asterisk `*`. 
+
+Dataset-specific metadata are organized into a set of related  resources, including `study`, `participant`, `device`, `dataset` and reference resources, which are declared and linked within the data package. 
