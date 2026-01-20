@@ -5,16 +5,14 @@ permalink: /
 description: Data exchange format for optical radiation and visual experience data
 ---
 
-**Gathered Light Exposure and Auxiliary Measurements - Data Package** (GLEAM DP) is a community-developed data exchange format for optical radiation and visual experience data. A GLEAM DP is a [Frictionless Data Package](https://specs.frictionlessdata.io/data-package/) that consists of:
+**Gathered Light Exposure and Auxiliary Measurements - Data Package** (GLEAM DP) is a community-developed data exchange format for optical radiation and visual experience data. A GLEAM DP is a [Frictionless Data Package](https://specs.frictionlessdata.io/data-package/) in which `datapackage.json` declares all files as `resources` and links them to schemas for validation and interoperability.
 
-File | Description
+File / resource | Description
 --- | ---
-`datapackage.json`{:.d-inline-block style="width:150px;"} | [Metadata](metadata/) about the data package and project.
-`study.json` | Metadata about the [study](metadata/#study).
-`participant.json` | Metadata about the [participants](metadata/#participant) in the study.
-`device.json` | Metadata about the wearable [devices](metadata/#device) used in the study.
-`dataset.json` | Metadata about the [datasets](metadata/#dataset) in the study.
-`placeholder-filename.csv` | Any number of files containing [data](data/) of time-stamped observations of light, visual experience, or auxiliary data.
+`datapackage.json`{:.d-inline-block style="width:150px;"} | Package-level metadata plus a `resources` list describing all files in the package.
+Core resources (required) | Canonical resources required by the GLEAM DP profile: `study`, `participants`, `datasets`, `devices`, `device_datasheets`.
+Optional core resources | Canonical resources that may be included when available: `participant_characteristics`.
+Additional resources | Any number of additional resources (tabular or JSON), e.g. optical radiation, light exposure time series, or auxiliary signals. Additional resources are validated when they declare a `schema` (Table Schema) or `jsonSchema` (JSON Schema).
 
 ## Context
 
@@ -31,7 +29,26 @@ See the [example dataset](example/).
 
 ## Validation
 
-To allow validation, the `datapackage.json` of your dataset should reference the used version of GLEAM DP, both in `profile` and the resources' `schema`:
+### Validation principles
+
+Validation in GLEAM DP is performed using a **custom validator** that applies the following principles:
+
+- **Core resources** defined by the GLEAM profile (e.g. `study`, `participants`, `datasets`, `devices`, `device_datasheets`)  
+  must declare a schema (`schema` for tabular resources, `jsonSchema` for JSON resources).  
+  Missing schemas for core resources result in **validation errors**.
+
+- **Additional resources** may be included with any name.
+  - If a `schema` or `jsonSchema` is declared, it is used for validation.
+  - If no schema is declared, schema-based validation is skipped and a **warning** is issued.
+
+- **Tabular resources** are validated against their declared schemas using the Frictionless *Table Schema* specification.
+
+- **JSON resources** are validated against their declared schemas using *JSON Schema*.
+
+- In addition to schema validation, the custom validator performs **cross-resource consistency checks**
+  (e.g. verifying references between studies, participants, devices, datasets, and device datasheets).
+
+To enable validation, the `datapackage.json` of your dataset should reference the used version of GLEAM DP in `profile`. Core resources use canonical names; additional resources may use any name. Resources are validated against their declared `schema` (tabular) or `jsonSchema` (JSON).
 
 ```json
 {
@@ -54,14 +71,6 @@ To allow validation, the `datapackage.json` of your dataset should reference the
       "schema": "https://raw.githubusercontent.com/tscnlab/GLEAM-dp/<version>/schemas/participants.schema.json"
     },
     {
-      "name": "participant_characteristics",
-      "path": "data/participant_characteristics.csv",
-      "profile": "tabular-data-resource",
-      "format": "csv",
-      "mediatype": "text/csv",
-      "schema": "https://raw.githubusercontent.com/tscnlab/GLEAM-dp/<version>/schemas/participant_characteristics.schema.json"
-    },
-    {
       "name": "datasets",
       "path": "data/datasets.json",
       "profile": "https://raw.githubusercontent.com/tscnlab/GLEAM-dp/<version>/schemas/json-entity-resource.json",
@@ -82,24 +91,44 @@ To allow validation, the `datapackage.json` of your dataset should reference the
       "mediatype": "application/json",
       "jsonSchema": "https://raw.githubusercontent.com/tscnlab/GLEAM-dp/<version>/schemas/device_datasheet.schema.json"
     },
+
     {
-      "name": "light_data",
-      "path": "data/light_data.csv",
+      "name": "participant_characteristics",
+      "path": "data/participant_characteristics.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "schema": "https://raw.githubusercontent.com/tscnlab/GLEAM-dp/<version>/schemas/participant_characteristics.schema.json"
+    },
+
+    {
+      "name": "wrist_light",
+      "path": "data/wrist_light.csv",
       "profile": "tabular-data-resource",
       "format": "csv",
       "mediatype": "text/csv",
       "dialect": { "delimiter": ";", "decimalChar": "." },
-      "schema": "https://raw.githubusercontent.com/tscnlab/GLEAM-dp/<version>/schemas/light_data.schema.json"
+      "schema": "schemas/wrist_light.schema.json"
+    },
+    {
+      "name": "optical_radiation",
+      "path": "data/optical_radiation.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "schema": "schemas/optical_radiation.schema.json"
     }
   ]
 }
 ```
 
-You can validate your dataset against the specifications of GLEAM DP (and Frictionless Data Package) with:
+### Running the validator
+
+To validate a GLEAM DP dataset, use the GLEAM DP validator:
 
 ```shell
 pip install frictionless
-frictionless validate path/to/your/datapackage.json
+python3 gleam_validator.py path/to/your/datapackage.json
 ```
 
 ## Contribute
