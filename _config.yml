@@ -2,11 +2,12 @@
 title: GLEAM DP
 author: GLEAM DP Development Team
 email: johannes.zauner@tum.de
-# url: "https://tscnlab.github.io/GLEAM-dp/"
+url: "https://tscnlab.github.io/GLEAM-dp/"
+baseurl: "/glc_dp_viewer"
 
 # SOCIAL PROFILES
 social:
-  github: salmathalji/glc_dp_viewer
+  github: tscnlab/glc_dp_viewer
 
 
 # Theme
@@ -16,7 +17,7 @@ github_edit: true
 logo: assets/logo_glee.png
 
 # Build settings
-repository: salmathalji/glc_dp_viewer # Required so Jekyll on GitHub Actions can access repo metadata
+repository: tscnlab/glc_dp_viewer # Required so Jekyll on GitHub Actions can access repo metadata
 markdown: kramdown
 plugins:
   - jekyll-feed
