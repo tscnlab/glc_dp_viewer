@@ -19,5 +19,5 @@
 - id: participant_characteristics_schema
   required: false
 
-- id: light_data_schema
-  example: true
+#- id: light_data_schema
+#  example: true
