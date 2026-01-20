@@ -14,7 +14,7 @@ social:
 theme: minima
 remote_theme: tdwg/petridish
 github_edit: true
-logo: assets/logo_glee.png
+logo: assets/glc_logo.png
 
 # Build settings
 repository: tscnlab/glc_dp_viewer # Required so Jekyll on GitHub Actions can access repo metadata
