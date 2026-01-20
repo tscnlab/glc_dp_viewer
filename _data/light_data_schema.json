@@ -1,6 +1,7 @@
 {
   "$id": "urn:gleam:schema:light-data:1",
-  "title": "Light data",
+  "title": "Actiwatch-format light and actigraphy data",
+  "description": "High-resolution wearable light exposure and actigraphy time-series data exported from Actiwatch-family devices (e.g. Actiwatch Spectrum), including raw sensor channels and derived metrics.", 
   "fields": [
     { "name": "DATE/TIME", "type": "datetime", "format": "%d/%m/%Y %H:%M:%S" },
     { "name": "MS", "type": "integer" },
