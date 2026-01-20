@@ -19,5 +19,5 @@
 - id: participant_characteristics_schema
   required: false
 
-- id: light_data_schema.json
+- id: light_data_schema
   example: true
