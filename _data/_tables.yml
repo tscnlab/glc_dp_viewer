@@ -11,10 +11,13 @@
   required: true
 
 - id: device_datasheet_schema
-  example: true
+  required: true
 
 - id: participant_schema
   required: true
 
 - id: participant_characteristics_schema
   required: false
+
+- id: light_data_schema.json
+  example: true
