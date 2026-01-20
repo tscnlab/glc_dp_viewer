@@ -1,7 +1,20 @@
-- study_schema
-- contributor_schema
-- dataset_schema
-- device_schema
-- device_datasheet_schema
-- participant_schema
-- participant_characteristics_schema
+- id: study_schema
+  required: true
+
+- id: contributor_schema
+  required: false
+
+- id: dataset_schema
+  required: true
+
+- id: device_schema
+  required: true
+
+- id: device_datasheet_schema
+  example: true
+
+- id: participant_schema
+  required: true
+
+- id: participant_characteristics_schema
+  required: false
