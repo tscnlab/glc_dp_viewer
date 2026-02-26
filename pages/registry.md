@@ -1,12 +1,12 @@
 ---
-layout: default
-title: Registry
-nav_order: 50
+layout: page
+title: GLC registry
+permalink: /registry/
 ---
 
-# GLC Registry
+# GLC registry
 
-<p>
+<p class="meta">
   Source: <a href="https://tscnlab.github.io/glc-registry/registry.json">registry.json</a>
 </p>
 
@@ -19,16 +19,44 @@ nav_order: 50
     return `<span class="pill ${cls}">${s}</span>`;
   }
 
+  function fmtIso(iso) {
+    if (!iso) return "";
+    // keep it simple: show ISO or a short local time
+    try {
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return iso;
+      return d.toISOString().replace("T", " ").replace("Z", " UTC");
+    } catch {
+      return iso;
+    }
+  }
+
   async function main() {
-    const res = await fetch("https://tscnlab.github.io/glc-registry/registry.json", { cache: "no-store" });
+    const url = "https://tscnlab.github.io/glc-registry/registry.json";
+    const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) throw new Error(`HTTP ${res.status} fetching registry.json`);
     const data = await res.json();
 
     const rows = data.datasets || [];
-    const updated = data.generated_at_utc || "";
+    const generated = data.generated_at_utc || "";
+
+    // Sort: failing first, then pass, then unknown; within each, newest validation first
+    const rank = (s) => (s === "fail" ? 0 : s === "pass" ? 1 : 2);
+    rows.sort((a, b) => {
+      const sa = (a.validation?.status || "unknown").toLowerCase();
+      const sb = (b.validation?.status || "unknown").toLowerCase();
+      if (rank(sa) !== rank(sb)) return rank(sa) - rank(sb);
+      const ta = Date.parse(a.validation?.timestamp_utc || "") || 0;
+      const tb = Date.parse(b.validation?.timestamp_utc || "") || 0;
+      return tb - ta;
+    });
 
     const html = `
-      <p class="meta">Updated: <code>${updated}</code> · Datasets: <code>${rows.length}</code></p>
+      <p class="meta">
+        Registry updated: <code>${fmtIso(generated)}</code>
+        · Datasets: <code>${rows.length}</code>
+      </p>
+
       <table>
         <thead>
           <tr>
@@ -36,28 +64,36 @@ nav_order: 50
             <th>Status</th>
             <th>Commit</th>
             <th>Validator</th>
+            <th>Validated at</th>
             <th>Report</th>
           </tr>
         </thead>
         <tbody>
           ${rows.map(d => {
             const v = d.validation || {};
-            const sha = v.commit_sha ? v.commit_sha.slice(0, 7) : "";
             const repo = d.repo || d.id || "";
-            const repoUrl = d.repo ? `https://github.com/${d.repo}` : "#";
+            const repoUrl = d.repo ? `https://github.com/${d.repo}` : "";
+            const shaFull = v.commit_sha || "";
+            const shaShort = shaFull ? shaFull.slice(0, 7) : "";
             const reportUrl = d.validation_url || "";
+            const validatedAt = v.timestamp_utc || d.fetched_at_utc || "";
             return `
               <tr>
-                <td><a href="${repoUrl}"><code>${repo}</code></a></td>
+                <td>${repoUrl ? `<a href="${repoUrl}"><code>${repo}</code></a>` : `<code>${repo}</code>`}</td>
                 <td>${pill(v.status)}</td>
-                <td><code>${sha}</code></td>
+                <td>${shaShort ? `<code title="${shaFull}">${shaShort}</code>` : ""}</td>
                 <td><code>${v.validator_version || ""}</code></td>
-                <td><a href="${reportUrl}">validation.json</a></td>
+                <td><code>${fmtIso(validatedAt)}</code></td>
+                <td>${reportUrl ? `<a href="${reportUrl}">validation.json</a>` : ""}</td>
               </tr>
             `;
           }).join("")}
         </tbody>
       </table>
+
+      <p class="small">
+        Missing a dataset? Add it to <code>datasets.yml</code> in the registry repo and wait for the next scheduled run.
+      </p>
     `;
 
     document.getElementById("app").innerHTML = html;
@@ -79,4 +115,5 @@ nav_order: 50
   .fail { background: #fdecec; color: #b42318; }
   .unknown { background: #f2f2f2; color: #555; }
   code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.95em; }
+  .small { font-size: 12px; color: #666; margin-top: 12px; }
 </style>
