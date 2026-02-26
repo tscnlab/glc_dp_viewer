@@ -1,0 +1,105 @@
+---
+layout: default
+title: GLC Registry
+permalink: /registry/
+---
+
+<h1>GLC Registry</h1>
+
+<p class="small">
+  Source:
+  <a href="https://tscnlab.github.io/glc-registry/registry.json"><code>registry.json</code></a>
+</p>
+
+<div id="app" class="small">Loading…</div>
+
+<style>
+  /* light touch: follows your site typography */
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 10px 12px; border-bottom: 1px solid rgba(0,0,0,0.08); vertical-align: top; }
+  th { text-align: left; font-weight: 700; }
+  .pill { display:inline-block; padding:2px 10px; border-radius:999px; font-weight:700; font-size:12px; }
+  .pass { background:#e7f7ef; color:#137a3a; }
+  .fail { background:#fdecec; color:#b42318; }
+  .unknown { background:#f2f2f2; color:#555; }
+</style>
+
+<script>
+(function () {
+  const REGISTRY_URL = "https://tscnlab.github.io/glc-registry/registry.json";
+
+  function pill(status) {
+    const s = (status || "unknown").toLowerCase();
+    const cls = s === "pass" ? "pass" : s === "fail" ? "fail" : "unknown";
+    return `<span class="pill ${cls}">${s}</span>`;
+  }
+
+  function fmtUtc(ts) {
+    if (!ts) return "";
+    // make it readable, keep UTC
+    return ts.replace("T", " ").replace("+00:00", " UTC");
+  }
+
+  async function main() {
+    const app = document.getElementById("app");
+
+    // cache-bust so GH Pages doesn’t serve stale JSON
+    const url = REGISTRY_URL + "?t=" + Date.now();
+
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status} fetching registry.json`);
+    const data = await res.json();
+
+    const rows = data.datasets || [];
+    const updated = data.generated_at_utc || "";
+
+    const html = `
+      <p class="small">Registry updated: <code>${fmtUtc(updated)}</code> · Datasets: <code>${rows.length}</code></p>
+      <table>
+        <thead>
+          <tr>
+            <th>Repo</th>
+            <th>Status</th>
+            <th>Commit</th>
+            <th>Validator</th>
+            <th>Validated at</th>
+            <th>Report</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(d => {
+            const v = d.validation || {};
+            const repo = d.repo || d.id || "";
+            const repoUrl = d.repo ? `https://github.com/${d.repo}` : "#";
+            const sha7 = v.commit_sha ? v.commit_sha.slice(0, 7) : "";
+            const shaUrl = v.commit_sha && d.repo ? `https://github.com/${d.repo}/commit/${v.commit_sha}` : repoUrl;
+            const reportUrl = d.validation_url || "";
+            return `
+              <tr>
+                <td><a href="${repoUrl}"><code>${repo}</code></a></td>
+                <td>${pill(v.status)}</td>
+                <td>${sha7 ? `<a href="${shaUrl}"><code>${sha7}</code></a>` : ""}</td>
+                <td><code>${v.validator_version || ""}</code></td>
+                <td><code>${fmtUtc(v.timestamp_utc || "")}</code></td>
+                <td><a href="${reportUrl}">validation.json</a></td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+      <p class="small" style="margin-top:12px;">
+        Missing a dataset? Add it to <code>datasets.yml</code> in the registry repo and wait for the next scheduled run.
+      </p>
+    `;
+
+    app.innerHTML = html;
+  }
+
+  main().catch(err => {
+    console.error(err);
+    document.getElementById("app").innerHTML =
+      `<p style="color:#b42318;"><b>Failed to load registry</b><br/><code>${String(err)}</code></p>
+       <p class="small">Open DevTools → Console for details (often this is a wrong URL returning HTML/404).</p>`;
+  });
+})();
+</script>
