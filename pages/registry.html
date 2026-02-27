@@ -19,8 +19,14 @@ permalink: /registry/
   th { text-align: left; font-weight: 700; }
 
   /* Repo column */
-  th.repo-col { width: 380px; }
-  td.repo-col code { white-space: nowrap; }
+th.repo-col { width: 420px; }
+td.repo-col code {
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
   /* Validated column */
   th.validated-col { width: 240px; }
@@ -67,34 +73,59 @@ function fmtUtc(ts) {
       <p class="small">Registry updated: <code>${fmtUtc(updated)}</code> · Datasets: <code>${rows.length}</code></p>
       <table>
         <thead>
-          <tr>
-            <th class="repo-col">Dataset Repository</th>
-            <th>Status</th>
-            <th>Commit</th>
-            <th>Validator</th>
-            <th class="validated-col">Validated at</th>
-            <th>Report</th>
-          </tr>
-        </thead>
+            <tr>
+                <th class="repo-col">Dataset Repository</th>
+                <th>Status (latest pass)</th>
+                <th>Commit</th>
+                <th>Validator</th>
+                <th class="validated-col">Validated at (latest pass)</th>
+                <th>Current status</th>
+                <th>Reports</th>
+            </tr>
+            </thead>
         <tbody>
           ${rows.map(d => {
-            const v = d.validation || {};
+            const lp = d.latest_pass || {};   // latest passing snapshot (membership)
+            const cur = d.current || null;    // most recent run (may be fail)
+
             const repo = d.repo || d.id || "";
             const repoUrl = d.repo ? `https://github.com/${d.repo}` : "#";
-            const sha7 = v.commit_sha ? v.commit_sha.slice(0, 7) : "";
-            const shaUrl = v.commit_sha && d.repo ? `https://github.com/${d.repo}/commit/${v.commit_sha}` : repoUrl;
-            const reportUrl = d.validation_url || "";
+
+            const lpSha7 = lp.commit_sha ? lp.commit_sha.slice(0, 7) : "";
+            const lpShaUrl = (d.repo && lp.commit_sha)
+                ? `https://github.com/${d.repo}/commit/${lp.commit_sha}`
+                : repoUrl;
+
+            const curStatus = cur && cur.status ? cur.status : "unknown";
+
+            const lpValidatedAt = lp.timestamp_utc ? fmtUtc(lp.timestamp_utc) : "";
+            const lpValidatorVer = lp.validator_version || "";
+
+            const latestPassUrl = d.latest_pass_url || "";
+            const currentUrl = d.current_url || "";
+
             return `
-              <tr>
+                <tr>
                 <td class="repo-col"><a href="${repoUrl}"><code>${repo}</code></a></td>
-                <td>${pill(v.status)}</td>
-                <td>${sha7 ? `<a href="${shaUrl}"><code>${sha7}</code></a>` : ""}</td>
-                <td><code>${v.validator_version || ""}</code></td>
-                <td class="validated-col"><code>${fmtUtc(v.timestamp_utc || "")}</code></td>
-                <td><a href="${reportUrl}">validation.json</a></td>
-              </tr>
+
+                <td>${pill(lp.status)}</td>
+
+                <td>${lpSha7 ? `<a href="${lpShaUrl}"><code>${lpSha7}</code></a>` : ""}</td>
+
+                <td><code>${lpValidatorVer}</code></td>
+
+                <td class="validated-col"><code>${lpValidatedAt}</code></td>
+
+                <td>${pill(curStatus)}</td>
+
+                <td>
+                    ${latestPassUrl ? `<a href="${latestPassUrl}">latest_pass.json</a>` : ""}
+                    ${latestPassUrl && currentUrl ? ` · ` : ``}
+                    ${currentUrl ? `<a href="${currentUrl}">validation.json</a>` : ""}
+                </td>
+                </tr>
             `;
-          }).join("")}
+        }).join("")}
         </tbody>
       </table>
       <p class="small" style="margin-top:12px;">
