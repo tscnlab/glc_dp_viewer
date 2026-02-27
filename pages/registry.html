@@ -14,22 +14,16 @@ permalink: /registry/
 <div id="app" class="small">Loading…</div>
 
 <style>
-  /* Layout + typography: keep it consistent with the viewer site */
-  .reg-meta { margin: 0 0 14px; }
-  .reg-meta code { white-space: nowrap; }
-
   table.reg {
     width: 100%;
     border-collapse: collapse;
     table-layout: auto;
   }
-
   table.reg th, table.reg td {
     padding: 10px 12px;
     border-bottom: 1px solid rgba(0,0,0,0.08);
     vertical-align: top;
   }
-
   table.reg th {
     text-align: left;
     font-weight: 700;
@@ -37,13 +31,12 @@ permalink: /registry/
   }
 
   /* Column sizing */
-  th.repo-col, td.repo-col { width: 440px; }
-  th.commit-col, td.commit-col { width: 120px; }
-  th.time-col, td.time-col { width: 220px; }
-  th.status-col, td.status-col { width: 140px; }
+  th.repo-col, td.repo-col { width: 420px; }
+  th.lp-col, td.lp-col { width: 260px; }
+  th.cur-col, td.cur-col { width: 320px; }
   th.links-col, td.links-col { width: 220px; }
 
-  /* Keep repo names readable without wrapping into weird shapes */
+  /* Repo truncation */
   td.repo-col a code {
     display: inline-block;
     max-width: 100%;
@@ -53,10 +46,11 @@ permalink: /registry/
     vertical-align: bottom;
   }
 
-  /* Keep timestamps on one line (or two if needed) */
-  td.time-col code {
-    white-space: nowrap;
-  }
+  /* Two-line cell blocks */
+  .cell-stack { display: flex; flex-direction: column; gap: 6px; }
+  .rowline { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .label { color: rgba(0,0,0,0.55); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; }
+  .mono code { white-space: nowrap; }
 
   /* Status pills */
   .pill {
@@ -71,26 +65,13 @@ permalink: /registry/
   .fail { background: #fdecec; color: #b42318; }
   .unknown { background: #f2f2f2; color: #555; }
 
-  /* Subtext for “current vs latest pass” */
-  .muted { color: rgba(0,0,0,0.55); font-size: 12px; margin-top: 2px; }
-  .stack { display: flex; flex-direction: column; gap: 4px; }
-
-  /* Links in the reports cell */
+  /* Links */
   .links a { white-space: nowrap; }
-  .links .sep { color: rgba(0,0,0,0.35); margin: 0 6px; }
+  .sep { color: rgba(0,0,0,0.35); margin: 0 6px; }
 
-  /* Tiny inline badge for validator version (secondary) */
-  .vtag {
-    display: inline-block;
-    padding: 1px 6px;
-    border-radius: 6px;
-    background: rgba(0,0,0,0.06);
-    font-size: 11px;
-    font-weight: 700;
-    color: rgba(0,0,0,0.6);
-    margin-left: 6px;
-    white-space: nowrap;
-  }
+  /* Small meta line */
+  .reg-meta { margin: 0 0 14px; }
+  .reg-meta code { white-space: nowrap; }
 </style>
 
 <script>
@@ -105,12 +86,11 @@ permalink: /registry/
 
   function fmtUtc(ts) {
     if (!ts) return "";
-    // 2026-02-27T13:41:01.561073+00:00 -> 2026-02-27 13:41 UTC
     return ts
       .replace("T", " ")
-      .replace(/\.\d+/, "")     // drop subseconds
+      .replace(/\.\d+/, "")          // drop subseconds
       .replace("+00:00", " UTC")
-      .replace(/:\d\d UTC$/, " UTC"); // drop seconds (optional)
+      .replace(/:\d\d UTC$/, " UTC"); // drop seconds
   }
 
   function shortSha(sha) {
@@ -144,12 +124,8 @@ permalink: /registry/
         <thead>
           <tr>
             <th class="repo-col">Dataset repository</th>
-            <th class="status-col">Latest pass</th>
-            <th class="commit-col">Commit</th>
-            <th class="time-col">Validated at</th>
-            <th class="status-col">Current</th>
-            <th class="commit-col">Commit</th>
-            <th class="time-col">Validated at</th>
+            <th class="lp-col">Latest pass</th>
+            <th class="cur-col">Current</th>
             <th class="links-col">Reports</th>
           </tr>
         </thead>
@@ -161,32 +137,26 @@ permalink: /registry/
             const lp = d.latest_pass || {};
             const cur = d.current || {};
 
-            const lpStatus = lp.status || "unknown";
-            const curStatus = cur.status || "unknown";
-
             const lpSha = lp.commit_sha || "";
-            const curSha = cur.commit_sha || "";
-
             const lpSha7 = shortSha(lpSha);
-            const curSha7 = shortSha(curSha);
-
-            const lpTime = fmtUtc(lp.timestamp_utc || "");
-            const curTime = fmtUtc(cur.timestamp_utc || "");
-
             const lpCommitUrl = ghCommitUrl(d.repo, lpSha);
+            const lpTime = fmtUtc(lp.timestamp_utc || "");
+
+            const curStatus = cur.status || "unknown";
+            const curSha = cur.commit_sha || "";
+            const curSha7 = shortSha(curSha);
             const curCommitUrl = ghCommitUrl(d.repo, curSha);
+            const curTime = fmtUtc(cur.timestamp_utc || "");
 
             const latestPassUrl = d.latest_pass_url || "";
             const currentUrl = d.current_url || "";
 
-            // show validator version in a subtle way if it differs
+            // Optional: show validator version only if they differ (otherwise it’s noise)
             const lpV = lp.validator_version || "";
             const curV = cur.validator_version || "";
-            const showVTag = (lpV && curV && lpV !== curV);
-
-            const vTag = showVTag
-              ? `<span class="vtag" title="Validator versions differ">lp v${lpV} / cur v${curV}</span>`
-              : (lpV ? `<span class="vtag" title="Validator version">v${lpV}</span>` : "");
+            const vNote = (lpV && curV && lpV !== curV)
+              ? `<span class="label" title="Validator differs">validator</span> <code>${lpV} → ${curV}</code>`
+              : "";
 
             return `
               <tr>
@@ -194,31 +164,34 @@ permalink: /registry/
                   <a href="${repoUrl}"><code>${repo}</code></a>
                 </td>
 
-                <td class="status-col">
-                  <div class="stack">
-                    <div>${pill(lpStatus)}</div>
-                    ${vTag ? `<div class="muted">${vTag}</div>` : ``}
+                <td class="lp-col mono">
+                  <div class="cell-stack">
+                    <div class="rowline">
+                      <span class="label">commit</span>
+                      ${lpSha7 ? `<a href="${lpCommitUrl}"><code>${lpSha7}</code></a>` : `<code>—</code>`}
+                    </div>
+                    <div class="rowline">
+                      <span class="label">validated</span>
+                      <code>${lpTime || "—"}</code>
+                    </div>
                   </div>
                 </td>
 
-                <td class="commit-col">
-                  ${lpSha7 ? `<a href="${lpCommitUrl}"><code>${lpSha7}</code></a>` : `<span class="muted">—</span>`}
-                </td>
-
-                <td class="time-col">
-                  ${lpTime ? `<code>${lpTime}</code>` : `<span class="muted">—</span>`}
-                </td>
-
-                <td class="status-col">
-                  ${pill(curStatus)}
-                </td>
-
-                <td class="commit-col">
-                  ${curSha7 ? `<a href="${curCommitUrl}"><code>${curSha7}</code></a>` : `<span class="muted">—</span>`}
-                </td>
-
-                <td class="time-col">
-                  ${curTime ? `<code>${curTime}</code>` : `<span class="muted">—</span>`}
+                <td class="cur-col mono">
+                  <div class="cell-stack">
+                    <div class="rowline">
+                      <span class="label">status</span>
+                      ${pill(curStatus)}
+                      ${vNote ? `<span class="sep">·</span>${vNote}` : ``}
+                    </div>
+                    <div class="rowline">
+                      <span class="label">commit</span>
+                      ${curSha7 ? `<a href="${curCommitUrl}"><code>${curSha7}</code></a>` : `<code>—</code>`}
+                      <span class="sep">·</span>
+                      <span class="label">validated</span>
+                      <code>${curTime || "—"}</code>
+                    </div>
+                  </div>
                 </td>
 
                 <td class="links-col links">
@@ -243,8 +216,7 @@ permalink: /registry/
   main().catch(err => {
     console.error(err);
     document.getElementById("app").innerHTML =
-      `<p style="color:#b42318;"><b>Failed to load registry</b><br/><code>${String(err)}</code></p>
-       <p class="small">This is usually a registry URL issue or a temporary GH Pages caching delay.</p>`;
+      `<p style="color:#b42318;"><b>Failed to load registry</b><br/><code>${String(err)}</code></p>`;
   });
 })();
 </script>
