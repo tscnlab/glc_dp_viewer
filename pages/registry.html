@@ -95,7 +95,7 @@ permalink: /registry/
         <thead>
           <tr>
             <th class="repo-col">Dataset repository</th>
-            <th>Row</th>
+            <th>State</th>
             <th>Status</th>
             <th>Commit</th>
             <th class="when-col">Validated at</th>
@@ -128,44 +128,46 @@ permalink: /registry/
             // If there is no latest_pass (shouldn't happen if you're enforcing membership),
             // still render both rows as unknown rather than breaking.
             return `
-              <tr class="group-start">
-                <td class="repo-col" rowspan="2">
-                  <a href="${repoUrl}"><code>${repo}</code></a>
-                </td>
+                <tr class="group-start">
+                    <td class="repo-col" rowspan="2">
+                    <a href="${repoUrl}"><code>${repo}</code></a>
+                    </td>
 
-                <td><span class="rowtag">Latest pass</span></td>
+                    <td><span class="rowtag">Latest pass</span></td>
 
-                <td>${pill(lpStatus)}</td>
+                    <td>${pill(lpStatus)}</td>
 
-                <td>
-                  ${lpSha ? `<a href="${lpShaUrl}"><code>${sha7(lpSha)}</code></a>` : `<span class="muted">—</span>`}
-                </td>
+                    <td>
+                    ${lpSha ? `<a href="${lpShaUrl}"><code>${sha7(lpSha)}</code></a>` : `<span class="muted">—</span>`}
+                    </td>
 
-                <td class="when-col">
-                  ${lpWhen ? `<code>${lpWhen}</code>` : `<span class="muted">—</span>`}
-                </td>
+                    <td class="when-col">
+                    ${lpWhen ? `<code>${lpWhen}</code>` : `<span class="muted">—</span>`}
+                    </td>
 
-                <td class="reports" rowspan="2">
-                  ${latestPassUrl ? `<a href="${latestPassUrl}">latest_pass.json</a>` : ``}
-                  ${(latestPassUrl && currentUrl) ? ` · ` : ``}
-                  ${currentUrl ? `<a href="${currentUrl}">validation.json</a>` : ``}
-                </td>
-              </tr>
+                    <td class="reports">
+                    ${latestPassUrl ? `<a href="${latestPassUrl}">latest_pass.json</a>` : `<span class="muted">—</span>`}
+                    </td>
+                </tr>
 
-              <tr class="group-end">
-                <td><span class="rowtag">Current</span></td>
+                <tr class="group-end">
+                    <td><span class="rowtag">Current</span></td>
 
-                <td>${pill(curStatus)}</td>
+                    <td>${pill(curStatus)}</td>
 
-                <td>
-                  ${curSha ? `<a href="${curShaUrl}"><code>${sha7(curSha)}</code></a>` : `<span class="muted">—</span>`}
-                </td>
+                    <td>
+                    ${curSha ? `<a href="${curShaUrl}"><code>${sha7(curSha)}</code></a>` : `<span class="muted">—</span>`}
+                    </td>
 
-                <td class="when-col">
-                  ${curWhen ? `<code>${curWhen}</code>` : `<span class="muted">—</span>`}
-                </td>
-              </tr>
-            `;
+                    <td class="when-col">
+                    ${curWhen ? `<code>${curWhen}</code>` : `<span class="muted">—</span>`}
+                    </td>
+
+                    <td class="reports">
+                    ${currentUrl ? `<a href="${currentUrl}">validation.json</a>` : `<span class="muted">—</span>`}
+                    </td>
+                </tr>
+                `;
           }).join("")}
         </tbody>
       </table>
