@@ -14,17 +14,17 @@ permalink: /registry/
 <div id="app" class="small">Loading…</div>
 
 <style>
-  /* light touch: follows your site typography */
   table { width: 100%; border-collapse: collapse; table-layout: auto; }
   th, td { padding: 10px 12px; border-bottom: 1px solid rgba(0,0,0,0.08); vertical-align: top; }
   th { text-align: left; font-weight: 700; }
 
-  /* make the repo column wide + keep it on one line */
+  /* Repo column */
   th.repo-col { width: 380px; }
   td.repo-col code { white-space: nowrap; }
 
-  /* optional: if you want ellipsis instead of overflow */
-  /* td.repo-col code { display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; } */
+  /* Validated column */
+  th.validated-col { width: 240px; }
+  td.validated-col code { white-space: nowrap; }
 
   .pill { display:inline-block; padding:2px 10px; border-radius:999px; font-weight:700; font-size:12px; }
   .pass { background:#e7f7ef; color:#137a3a; }
@@ -42,11 +42,13 @@ permalink: /registry/
     return `<span class="pill ${cls}">${s}</span>`;
   }
 
-  function fmtUtc(ts) {
-    if (!ts) return "";
-    // make it readable, keep UTC
-    return ts.replace("T", " ").replace("+00:00", " UTC");
-  }
+function fmtUtc(ts) {
+  if (!ts) return "";
+  return ts
+    .replace("T", " ")
+    .replace(/\.\d+/, "")   // remove microseconds
+    .replace("+00:00", " UTC");
+}
 
   async function main() {
     const app = document.getElementById("app");
@@ -66,11 +68,11 @@ permalink: /registry/
       <table>
         <thead>
           <tr>
-            <th class="repo-col">Repo</th>
+            <th class="repo-col">Dataset Repository</th>
             <th>Status</th>
             <th>Commit</th>
             <th>Validator</th>
-            <th>Validated at</th>
+            <th class="validated-col">Validated at</th>
             <th>Report</th>
           </tr>
         </thead>
@@ -88,7 +90,7 @@ permalink: /registry/
                 <td>${pill(v.status)}</td>
                 <td>${sha7 ? `<a href="${shaUrl}"><code>${sha7}</code></a>` : ""}</td>
                 <td><code>${v.validator_version || ""}</code></td>
-                <td><code>${fmtUtc(v.timestamp_utc || "")}</code></td>
+                <td class="validated-col"><code>${fmtUtc(v.timestamp_utc || "")}</code></td>
                 <td><a href="${reportUrl}">validation.json</a></td>
               </tr>
             `;
