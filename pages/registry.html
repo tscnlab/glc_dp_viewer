@@ -14,28 +14,83 @@ permalink: /registry/
 <div id="app" class="small">Loading…</div>
 
 <style>
-  table { width: 100%; border-collapse: collapse; table-layout: auto; }
-  th, td { padding: 10px 12px; border-bottom: 1px solid rgba(0,0,0,0.08); vertical-align: top; }
-  th { text-align: left; font-weight: 700; }
+  /* Layout + typography: keep it consistent with the viewer site */
+  .reg-meta { margin: 0 0 14px; }
+  .reg-meta code { white-space: nowrap; }
 
-  /* Repo column */
-th.repo-col { width: 420px; }
-td.repo-col code {
-  display: inline-block;
-  max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  table.reg {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+  }
 
-  /* Validated column */
-  th.validated-col { width: 240px; }
-  td.validated-col code { white-space: nowrap; }
+  table.reg th, table.reg td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    vertical-align: top;
+  }
 
-  .pill { display:inline-block; padding:2px 10px; border-radius:999px; font-weight:700; font-size:12px; }
-  .pass { background:#e7f7ef; color:#137a3a; }
-  .fail { background:#fdecec; color:#b42318; }
-  .unknown { background:#f2f2f2; color:#555; }
+  table.reg th {
+    text-align: left;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  /* Column sizing */
+  th.repo-col, td.repo-col { width: 440px; }
+  th.commit-col, td.commit-col { width: 120px; }
+  th.time-col, td.time-col { width: 220px; }
+  th.status-col, td.status-col { width: 140px; }
+  th.links-col, td.links-col { width: 220px; }
+
+  /* Keep repo names readable without wrapping into weird shapes */
+  td.repo-col a code {
+    display: inline-block;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+  }
+
+  /* Keep timestamps on one line (or two if needed) */
+  td.time-col code {
+    white-space: nowrap;
+  }
+
+  /* Status pills */
+  .pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .pass { background: #e7f7ef; color: #137a3a; }
+  .fail { background: #fdecec; color: #b42318; }
+  .unknown { background: #f2f2f2; color: #555; }
+
+  /* Subtext for “current vs latest pass” */
+  .muted { color: rgba(0,0,0,0.55); font-size: 12px; margin-top: 2px; }
+  .stack { display: flex; flex-direction: column; gap: 4px; }
+
+  /* Links in the reports cell */
+  .links a { white-space: nowrap; }
+  .links .sep { color: rgba(0,0,0,0.35); margin: 0 6px; }
+
+  /* Tiny inline badge for validator version (secondary) */
+  .vtag {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: rgba(0,0,0,0.06);
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(0,0,0,0.6);
+    margin-left: 6px;
+    white-space: nowrap;
+  }
 </style>
 
 <script>
@@ -48,20 +103,31 @@ td.repo-col code {
     return `<span class="pill ${cls}">${s}</span>`;
   }
 
-function fmtUtc(ts) {
-  if (!ts) return "";
-  return ts
-    .replace("T", " ")
-    .replace(/\.\d+/, "")   // remove microseconds
-    .replace("+00:00", " UTC");
-}
+  function fmtUtc(ts) {
+    if (!ts) return "";
+    // 2026-02-27T13:41:01.561073+00:00 -> 2026-02-27 13:41 UTC
+    return ts
+      .replace("T", " ")
+      .replace(/\.\d+/, "")     // drop subseconds
+      .replace("+00:00", " UTC")
+      .replace(/:\d\d UTC$/, " UTC"); // drop seconds (optional)
+  }
+
+  function shortSha(sha) {
+    return sha ? sha.slice(0, 7) : "";
+  }
+
+  function ghRepoUrl(repo) {
+    return repo ? `https://github.com/${repo}` : "#";
+  }
+
+  function ghCommitUrl(repo, sha) {
+    return (repo && sha) ? `https://github.com/${repo}/commit/${sha}` : ghRepoUrl(repo);
+  }
 
   async function main() {
     const app = document.getElementById("app");
-
-    // cache-bust so GH Pages doesn’t serve stale JSON
-    const url = REGISTRY_URL + "?t=" + Date.now();
-
+    const url = REGISTRY_URL + "?t=" + Date.now(); // cache-bust
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) throw new Error(`HTTP ${res.status} fetching registry.json`);
     const data = await res.json();
@@ -70,64 +136,102 @@ function fmtUtc(ts) {
     const updated = data.generated_at_utc || "";
 
     const html = `
-      <p class="small">Registry updated: <code>${fmtUtc(updated)}</code> · Datasets: <code>${rows.length}</code></p>
-      <table>
+      <p class="reg-meta small">
+        Registry updated: <code>${fmtUtc(updated)}</code> · Datasets: <code>${rows.length}</code>
+      </p>
+
+      <table class="reg">
         <thead>
-            <tr>
-                <th class="repo-col">Dataset Repository</th>
-                <th>Status (latest pass)</th>
-                <th>Commit</th>
-                <th>Validator</th>
-                <th class="validated-col">Validated at (latest pass)</th>
-                <th>Current status</th>
-                <th>Reports</th>
-            </tr>
-            </thead>
+          <tr>
+            <th class="repo-col">Dataset repository</th>
+            <th class="status-col">Latest pass</th>
+            <th class="commit-col">Commit</th>
+            <th class="time-col">Validated at</th>
+            <th class="status-col">Current</th>
+            <th class="commit-col">Commit</th>
+            <th class="time-col">Validated at</th>
+            <th class="links-col">Reports</th>
+          </tr>
+        </thead>
         <tbody>
           ${rows.map(d => {
-            const lp = d.latest_pass || {};   // latest passing snapshot (membership)
-            const cur = d.current || null;    // most recent run (may be fail)
-
             const repo = d.repo || d.id || "";
-            const repoUrl = d.repo ? `https://github.com/${d.repo}` : "#";
+            const repoUrl = ghRepoUrl(d.repo);
 
-            const lpSha7 = lp.commit_sha ? lp.commit_sha.slice(0, 7) : "";
-            const lpShaUrl = (d.repo && lp.commit_sha)
-                ? `https://github.com/${d.repo}/commit/${lp.commit_sha}`
-                : repoUrl;
+            const lp = d.latest_pass || {};
+            const cur = d.current || {};
 
-            const curStatus = cur && cur.status ? cur.status : "unknown";
+            const lpStatus = lp.status || "unknown";
+            const curStatus = cur.status || "unknown";
 
-            const lpValidatedAt = lp.timestamp_utc ? fmtUtc(lp.timestamp_utc) : "";
-            const lpValidatorVer = lp.validator_version || "";
+            const lpSha = lp.commit_sha || "";
+            const curSha = cur.commit_sha || "";
+
+            const lpSha7 = shortSha(lpSha);
+            const curSha7 = shortSha(curSha);
+
+            const lpTime = fmtUtc(lp.timestamp_utc || "");
+            const curTime = fmtUtc(cur.timestamp_utc || "");
+
+            const lpCommitUrl = ghCommitUrl(d.repo, lpSha);
+            const curCommitUrl = ghCommitUrl(d.repo, curSha);
 
             const latestPassUrl = d.latest_pass_url || "";
             const currentUrl = d.current_url || "";
 
+            // show validator version in a subtle way if it differs
+            const lpV = lp.validator_version || "";
+            const curV = cur.validator_version || "";
+            const showVTag = (lpV && curV && lpV !== curV);
+
+            const vTag = showVTag
+              ? `<span class="vtag" title="Validator versions differ">lp v${lpV} / cur v${curV}</span>`
+              : (lpV ? `<span class="vtag" title="Validator version">v${lpV}</span>` : "");
+
             return `
-                <tr>
-                <td class="repo-col"><a href="${repoUrl}"><code>${repo}</code></a></td>
-
-                <td>${pill(lp.status)}</td>
-
-                <td>${lpSha7 ? `<a href="${lpShaUrl}"><code>${lpSha7}</code></a>` : ""}</td>
-
-                <td><code>${lpValidatorVer}</code></td>
-
-                <td class="validated-col"><code>${lpValidatedAt}</code></td>
-
-                <td>${pill(curStatus)}</td>
-
-                <td>
-                    ${latestPassUrl ? `<a href="${latestPassUrl}">latest_pass.json</a>` : ""}
-                    ${latestPassUrl && currentUrl ? ` · ` : ``}
-                    ${currentUrl ? `<a href="${currentUrl}">validation.json</a>` : ""}
+              <tr>
+                <td class="repo-col">
+                  <a href="${repoUrl}"><code>${repo}</code></a>
                 </td>
-                </tr>
+
+                <td class="status-col">
+                  <div class="stack">
+                    <div>${pill(lpStatus)}</div>
+                    ${vTag ? `<div class="muted">${vTag}</div>` : ``}
+                  </div>
+                </td>
+
+                <td class="commit-col">
+                  ${lpSha7 ? `<a href="${lpCommitUrl}"><code>${lpSha7}</code></a>` : `<span class="muted">—</span>`}
+                </td>
+
+                <td class="time-col">
+                  ${lpTime ? `<code>${lpTime}</code>` : `<span class="muted">—</span>`}
+                </td>
+
+                <td class="status-col">
+                  ${pill(curStatus)}
+                </td>
+
+                <td class="commit-col">
+                  ${curSha7 ? `<a href="${curCommitUrl}"><code>${curSha7}</code></a>` : `<span class="muted">—</span>`}
+                </td>
+
+                <td class="time-col">
+                  ${curTime ? `<code>${curTime}</code>` : `<span class="muted">—</span>`}
+                </td>
+
+                <td class="links-col links">
+                  ${latestPassUrl ? `<a href="${latestPassUrl}">latest_pass.json</a>` : `<span class="muted">latest_pass.json</span>`}
+                  ${latestPassUrl && currentUrl ? `<span class="sep">·</span>` : ``}
+                  ${currentUrl ? `<a href="${currentUrl}">validation.json</a>` : `<span class="muted">validation.json</span>`}
+                </td>
+              </tr>
             `;
-        }).join("")}
+          }).join("")}
         </tbody>
       </table>
+
       <p class="small" style="margin-top:12px;">
         Missing a dataset? Add it to <code>datasets.yml</code> in the registry repo and wait for the next scheduled run.
       </p>
@@ -140,7 +244,7 @@ function fmtUtc(ts) {
     console.error(err);
     document.getElementById("app").innerHTML =
       `<p style="color:#b42318;"><b>Failed to load registry</b><br/><code>${String(err)}</code></p>
-       <p class="small">Open DevTools → Console for details (often this is a wrong URL returning HTML/404).</p>`;
+       <p class="small">This is usually a registry URL issue or a temporary GH Pages caching delay.</p>`;
   });
 })();
 </script>
