@@ -14,64 +14,45 @@ permalink: /registry/
 <div id="app" class="small">Loading…</div>
 
 <style>
-  table.reg {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: auto;
-  }
-  table.reg th, table.reg td {
-    padding: 10px 12px;
-    border-bottom: 1px solid rgba(0,0,0,0.08);
-    vertical-align: top;
-  }
-  table.reg th {
-    text-align: left;
-    font-weight: 700;
-    white-space: nowrap;
-  }
+  table { width: 100%; border-collapse: collapse; table-layout: auto; }
+  th, td { padding: 10px 12px; border-bottom: 1px solid rgba(0,0,0,0.08); vertical-align: top; }
+  th { text-align: left; font-weight: 700; }
 
   /* Column sizing */
-  th.repo-col, td.repo-col { width: 420px; }
-  th.lp-col, td.lp-col { width: 260px; }
-  th.cur-col, td.cur-col { width: 320px; }
-  th.links-col, td.links-col { width: 220px; }
-
-  /* Repo truncation */
-  td.repo-col a code {
+  th.repo-col { width: 420px; }
+  td.repo-col code {
     display: inline-block;
     max-width: 100%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    vertical-align: bottom;
   }
+  th.when-col { width: 240px; }
+  td.when-col code { white-space: nowrap; }
 
-  /* Two-line cell blocks */
-  .cell-stack { display: flex; flex-direction: column; gap: 6px; }
-  .rowline { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-  .label { color: rgba(0,0,0,0.55); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; }
-  .mono code { white-space: nowrap; }
+  /* Grouping (two-row blocks) */
+  tr.group-start td { border-top: 2px solid rgba(0,0,0,0.10); }
+  tr.group-start td { padding-top: 14px; }
+  tr.group-end td { padding-bottom: 14px; }
 
-  /* Status pills */
-  .pill {
+  /* Row label chips */
+  .rowtag {
     display: inline-block;
-    padding: 2px 10px;
-    border-radius: 999px;
     font-weight: 700;
     font-size: 12px;
-    line-height: 1.6;
+    letter-spacing: 0.02em;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.06);
   }
-  .pass { background: #e7f7ef; color: #137a3a; }
-  .fail { background: #fdecec; color: #b42318; }
-  .unknown { background: #f2f2f2; color: #555; }
 
-  /* Links */
-  .links a { white-space: nowrap; }
-  .sep { color: rgba(0,0,0,0.35); margin: 0 6px; }
+  .pill { display:inline-block; padding:2px 10px; border-radius:999px; font-weight:700; font-size:12px; }
+  .pass { background:#e7f7ef; color:#137a3a; }
+  .fail { background:#fdecec; color:#b42318; }
+  .unknown { background:#f2f2f2; color:#555; }
 
-  /* Small meta line */
-  .reg-meta { margin: 0 0 14px; }
-  .reg-meta code { white-space: nowrap; }
+  .muted { opacity: 0.75; }
+  .reports a { white-space: nowrap; }
 </style>
 
 <script>
@@ -88,26 +69,18 @@ permalink: /registry/
     if (!ts) return "";
     return ts
       .replace("T", " ")
-      .replace(/\.\d+/, "")          // drop subseconds
-      .replace("+00:00", " UTC")
-      .replace(/:\d\d UTC$/, " UTC"); // drop seconds
+      .replace(/\.\d+/, "")   // remove fractional seconds
+      .replace("+00:00", " UTC");
   }
 
-  function shortSha(sha) {
-    return sha ? sha.slice(0, 7) : "";
-  }
-
-  function ghRepoUrl(repo) {
-    return repo ? `https://github.com/${repo}` : "#";
-  }
-
-  function ghCommitUrl(repo, sha) {
-    return (repo && sha) ? `https://github.com/${repo}/commit/${sha}` : ghRepoUrl(repo);
+  function sha7(sha) {
+    return sha ? String(sha).slice(0, 7) : "";
   }
 
   async function main() {
     const app = document.getElementById("app");
     const url = REGISTRY_URL + "?t=" + Date.now(); // cache-bust
+
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) throw new Error(`HTTP ${res.status} fetching registry.json`);
     const data = await res.json();
@@ -116,88 +89,80 @@ permalink: /registry/
     const updated = data.generated_at_utc || "";
 
     const html = `
-      <p class="reg-meta small">
-        Registry updated: <code>${fmtUtc(updated)}</code> · Datasets: <code>${rows.length}</code>
-      </p>
+      <p class="small">Registry updated: <code>${fmtUtc(updated)}</code> · Datasets: <code>${rows.length}</code></p>
 
-      <table class="reg">
+      <table>
         <thead>
           <tr>
             <th class="repo-col">Dataset repository</th>
-            <th class="lp-col">Latest pass</th>
-            <th class="cur-col">Current</th>
-            <th class="links-col">Reports</th>
+            <th>Row</th>
+            <th>Status</th>
+            <th>Commit</th>
+            <th class="when-col">Validated at</th>
+            <th class="reports">Reports</th>
           </tr>
         </thead>
         <tbody>
-          ${rows.map(d => {
+          ${rows.map((d, idx) => {
             const repo = d.repo || d.id || "";
-            const repoUrl = ghRepoUrl(d.repo);
+            const repoUrl = d.repo ? `https://github.com/${d.repo}` : "#";
 
-            const lp = d.latest_pass || {};
-            const cur = d.current || {};
+            const lp = d.latest_pass || null;   // latest passing snapshot
+            const cur = d.current || null;      // most recent run
 
-            const lpSha = lp.commit_sha || "";
-            const lpSha7 = shortSha(lpSha);
-            const lpCommitUrl = ghCommitUrl(d.repo, lpSha);
-            const lpTime = fmtUtc(lp.timestamp_utc || "");
+            const lpStatus = lp && lp.status ? lp.status : "unknown";
+            const curStatus = cur && cur.status ? cur.status : "unknown";
 
-            const curStatus = cur.status || "unknown";
-            const curSha = cur.commit_sha || "";
-            const curSha7 = shortSha(curSha);
-            const curCommitUrl = ghCommitUrl(d.repo, curSha);
-            const curTime = fmtUtc(cur.timestamp_utc || "");
+            const lpSha = lp && lp.commit_sha ? lp.commit_sha : "";
+            const curSha = cur && cur.commit_sha ? cur.commit_sha : "";
+
+            const lpShaUrl = (d.repo && lpSha) ? `https://github.com/${d.repo}/commit/${lpSha}` : repoUrl;
+            const curShaUrl = (d.repo && curSha) ? `https://github.com/${d.repo}/commit/${curSha}` : repoUrl;
+
+            const lpWhen = lp && lp.timestamp_utc ? fmtUtc(lp.timestamp_utc) : "";
+            const curWhen = cur && cur.timestamp_utc ? fmtUtc(cur.timestamp_utc) : "";
 
             const latestPassUrl = d.latest_pass_url || "";
             const currentUrl = d.current_url || "";
 
-            // Optional: show validator version only if they differ (otherwise it’s noise)
-            const lpV = lp.validator_version || "";
-            const curV = cur.validator_version || "";
-            const vNote = (lpV && curV && lpV !== curV)
-              ? `<span class="label" title="Validator differs">validator</span> <code>${lpV} → ${curV}</code>`
-              : "";
-
+            // If there is no latest_pass (shouldn't happen if you're enforcing membership),
+            // still render both rows as unknown rather than breaking.
             return `
-              <tr>
-                <td class="repo-col">
+              <tr class="group-start">
+                <td class="repo-col" rowspan="2">
                   <a href="${repoUrl}"><code>${repo}</code></a>
                 </td>
 
-                <td class="lp-col mono">
-                  <div class="cell-stack">
-                    <div class="rowline">
-                      <span class="label">commit</span>
-                      ${lpSha7 ? `<a href="${lpCommitUrl}"><code>${lpSha7}</code></a>` : `<code>—</code>`}
-                    </div>
-                    <div class="rowline">
-                      <span class="label">validated</span>
-                      <code>${lpTime || "—"}</code>
-                    </div>
-                  </div>
+                <td><span class="rowtag">Latest pass</span></td>
+
+                <td>${pill(lpStatus)}</td>
+
+                <td>
+                  ${lpSha ? `<a href="${lpShaUrl}"><code>${sha7(lpSha)}</code></a>` : `<span class="muted">—</span>`}
                 </td>
 
-                <td class="cur-col mono">
-                  <div class="cell-stack">
-                    <div class="rowline">
-                      <span class="label">status</span>
-                      ${pill(curStatus)}
-                      ${vNote ? `<span class="sep">·</span>${vNote}` : ``}
-                    </div>
-                    <div class="rowline">
-                      <span class="label">commit</span>
-                      ${curSha7 ? `<a href="${curCommitUrl}"><code>${curSha7}</code></a>` : `<code>—</code>`}
-                      <span class="sep">·</span>
-                      <span class="label">validated</span>
-                      <code>${curTime || "—"}</code>
-                    </div>
-                  </div>
+                <td class="when-col">
+                  ${lpWhen ? `<code>${lpWhen}</code>` : `<span class="muted">—</span>`}
                 </td>
 
-                <td class="links-col links">
-                  ${latestPassUrl ? `<a href="${latestPassUrl}">latest_pass.json</a>` : `<span class="muted">latest_pass.json</span>`}
-                  ${latestPassUrl && currentUrl ? `<span class="sep">·</span>` : ``}
-                  ${currentUrl ? `<a href="${currentUrl}">validation.json</a>` : `<span class="muted">validation.json</span>`}
+                <td class="reports" rowspan="2">
+                  ${latestPassUrl ? `<a href="${latestPassUrl}">latest_pass.json</a>` : ``}
+                  ${(latestPassUrl && currentUrl) ? ` · ` : ``}
+                  ${currentUrl ? `<a href="${currentUrl}">validation.json</a>` : ``}
+                </td>
+              </tr>
+
+              <tr class="group-end">
+                <td><span class="rowtag">Current</span></td>
+
+                <td>${pill(curStatus)}</td>
+
+                <td>
+                  ${curSha ? `<a href="${curShaUrl}"><code>${sha7(curSha)}</code></a>` : `<span class="muted">—</span>`}
+                </td>
+
+                <td class="when-col">
+                  ${curWhen ? `<code>${curWhen}</code>` : `<span class="muted">—</span>`}
                 </td>
               </tr>
             `;
